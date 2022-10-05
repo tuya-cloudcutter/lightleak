@@ -50,6 +50,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install --upgrade platformio
 
+      - name: Install LibreTuya platform
+        run: |
+          pio platform install -f https://github.com/kuba2k2/libretuya
+
       - name: Get current build date
         id: build
         run: echo "::set-output name=date::$(date +'%y.%m.%d')"
@@ -72,4 +76,5 @@ jobs:
           files: |
             platformio-custom-ap/.pio/build/*/platformio-custom-ap*.uf2
             platformio-custom-ap/.pio/build/*/platformio-custom-ap*.bin
+          tag_name: v${{ steps.build.outputs.date }}
           fail_on_unmatched_files: true

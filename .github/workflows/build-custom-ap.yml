@@ -52,11 +52,11 @@ jobs:
 
       - name: Get current build date
         id: build
-        run: echo "::set-output name=date::$(date +'%y-%m-%d')"
+        run: echo "::set-output name=date::$(date +'%y.%m.%d')"
 
       - name: Build with PlatformIO
+        working-directory: ./platformio-custom-ap/
         run: |
-          cd platformio-custom-ap/
           pio run -e bk7231t -e bk7231n -e rtl8710bn -e esp32 -e esp8266
           cp .pio/build/esp32/firmware.bin .pio/build/esp32/platformio-custom-ap_${{ steps.build.outputs.date }}_esp32.bin
           cp .pio/build/esp8266/firmware.bin .pio/build/esp8266/platformio-custom-ap_${{ steps.build.outputs.date }}_esp8266.bin

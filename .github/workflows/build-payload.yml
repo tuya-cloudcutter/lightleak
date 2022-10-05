@@ -60,15 +60,10 @@ jobs:
           target-folder: bins/
           force: false
 
-      - name: Get current date
-        id: date
-        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
-
-      - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v1
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
         with:
-          name: Binaries release ${{ steps.date.outputs.date }}
-          files: |
+          name: lightleak-bins
+          path: |
             site/*.bin
             site/*.lst
-          fail_on_unmatched_files: true

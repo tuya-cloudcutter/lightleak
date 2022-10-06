@@ -29,9 +29,16 @@ void loop() {
 
 	if (client) {
 		Serial.println("Client connected");
+		uint32_t timeout = millis() + 5000;
 		while (client.connected()) {
 			readClientPacket(&client);
+			if (millis() > timeout) {
+				Serial.println("Read timeout!");
+				break;
+			}
 		}
+		client.stop();
+		Serial.println("Client disconnected");
 	}
 
 	if (stopAt > 1 && millis() > stopAt) {

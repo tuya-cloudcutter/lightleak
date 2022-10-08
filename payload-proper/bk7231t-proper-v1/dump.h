@@ -12,6 +12,7 @@ typedef int (*flash_read_t)(uint8_t *buf, uint32_t offset, uint32_t size);
 typedef int (*flash_write_t)(uint8_t *buf, uint32_t offset, uint32_t size);
 typedef int (*flash_erase_t)(uint32_t offset);
 typedef int (*printf_t)(const char *fmt, ...);
+typedef int (*crc32_t)(uint32_t init, uint8_t *buf, uint32_t size);
 
 typedef int (*ap_cfg_send_err_code_t)();
 typedef int (*tuya_hal_net_socket_create_t)(uint8_t type);
@@ -27,7 +28,8 @@ typedef struct {
 	flash_write_t flash_write;
 	flash_erase_t flash_erase;
 	printf_t printf;
-	void *reserved[12];
+	crc32_t crc32;
+	void *reserved[16];
 	// app
 	ap_cfg_send_err_code_t ap_cfg_send_err_code;
 	void *ap_cfg_send_err_code_end;
@@ -75,5 +77,5 @@ void find_app_intf(FW_INTERFACE *intf, uint8_t *start, uint8_t *end);
 // dump_util.c
 uint8_t strlen(char *str);
 // dump_cmd.c
-void cmd_send_response(FW_INTERFACE *intf, uint32_t address, uint8_t *data, uint16_t len);
+void cmd_send_response(FW_INTERFACE *intf, uint32_t request_id, uint32_t address, uint8_t *data, uint16_t len);
 void cmd_flash_read(FW_INTERFACE *intf, uint8_t *data);

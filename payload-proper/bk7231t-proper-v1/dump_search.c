@@ -26,6 +26,7 @@ uint8_t *find_word(uint8_t *start, uint8_t *end, uint32_t number) {
 }
 
 uint8_t *find_short(uint8_t *start, uint8_t *end, uint16_t number) {
+	start = THUMB_ADDR(start);
 	for (uint8_t *addr = start; addr < end; addr += 2) {
 		uint16_t data = addr[0] | addr[1] << 8;
 		if (data == number) {
@@ -45,70 +46,56 @@ uint8_t *find_short_rev(uint8_t *start, uint8_t *end, uint16_t number) {
 	return NULL;
 }
 
-uint8_t *parse_branch(uint16_t *data) {
-	uint32_t address = (uint32_t)data;
-
-	int16_t poff = data[0];
-	if (((poff >> 11) & 0b11111) != 0b11110)
-		return NULL;
-	uint16_t offs = data[1];
-	if (((offs >> 11) & 0b11111) != 0b11111)
-		return NULL;
-
-	poff <<= 5;
-	poff >>= 5;
-	offs <<= 5;
-	offs >>= 5;
-	return (uint8_t *)(address + 4 + (poff << 12) + offs * 2);
-}
-
 uint8_t *find_function(FW_INTERFACE *intf, uint8_t *start, uint8_t *end, char *string, uint16_t push_opcode) {
 	uint8_t len = strlen(string) + 1;
 
-	intf->printf("Search %s\n", string);
+	LOG("Search %s\n", string);
 
 	uint8_t *str_addr = find_data(start, end, (uint8_t *)string, len);
 	if (str_addr == NULL) {
-		intf->printf("Not found\n");
+		LOG("Not found\n");
 		return NULL;
 	}
-	intf->printf("Found %s %01x: %06x\n", string, 1, str_addr);
+	LOG("Found %s %01x: %06x\n", string, 1, str_addr);
 
 	uint8_t *str_offset_addr = find_word(start, end, (uint32_t)str_addr);
 	if (str_offset_addr == NULL) {
-		intf->printf("Not found\n");
+		LOG("Not found\n");
 		return NULL;
 	}
-	intf->printf("Found %s %01x: %06x\n", string, 2, str_offset_addr);
+	LOG("Found %s %01x: %06x\n", string, 2, str_offset_addr);
 
 	uint8_t *func_addr = find_short_rev(start, str_offset_addr, push_opcode);
 	if (func_addr == NULL) {
-		intf->printf("Not found\n");
+		LOG("Not found\n");
 		return NULL;
 	}
-	intf->printf("Found %s %01x: %06x\n", string, 3, func_addr);
+	LOG("Found %s %01x: %06x\n", string, 3, func_addr);
 	return func_addr + 1;
 }
 
-void find_app_intf(FW_INTERFACE *intf, uint8_t *start, uint8_t *end) {
+void find_app_intf(FW_INTERFACE *intf) {
 	uint8_t **store = NULL;
+	uint16_t *start, *end;
 
-	for (uint16_t *data = (uint16_t *)start; data < (uint16_t *)end; data++) {
+	start = (uint16_t *)THUMB_ADDR(intf->ap_cfg_send_err_code);
+	end	  = (uint16_t *)intf->ap_cfg_send_err_code_end;
+	for (uint16_t *data = start; data < end; data++) {
 		if (data[0] == 0x2001) {
 			// movs r0, #1
-			intf->printf("Found create\n");
+			LOG("Found create\n");
 			store = (uint8_t **)&intf->socket;
 			data++;
 		}
 		if (data[0] == 0x425B) {
 			// neg r3, r3
-			intf->printf("Found sendto\n");
+			LOG("Found sendto\n");
 			store = (uint8_t **)&intf->sendto;
 			data++;
 		}
 		if (data[2] == 0x23A4) {
 			// movs r3, #0xa4
-			intf->printf("Found close\n");
+			LOG("Found close\n");
 			store = (uint8_t **)&intf->close;
 		}
 
@@ -121,6 +108,7 @@ void find_app_intf(FW_INTERFACE *intf, uint8_t *start, uint8_t *end) {
 		store = NULL;
 	}
 
-	intf->printf("Found: create=%x, sendto=%x, close=%x\n", intf->socket, intf->sendto, intf->close);
-	intf->search_performed = intf->socket && intf->sendto && intf->close;
+	LOG("Found: create=%x, sendto=%x, close=%x\n", intf->socket, intf->sendto, intf->close);
+
+	intf->search_performed = intf->socket && intf->sendto && intf->close && intf->sys_timer_handle;
 }

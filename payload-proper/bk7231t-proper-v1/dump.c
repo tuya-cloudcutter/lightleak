@@ -10,18 +10,26 @@ int main(uint8_t *data, FW_INTERFACE *intf, uint32_t command) {
 	uint8_t *end   = (uint8_t *)(start + 0x107800);
 
 	if (intf->search_performed == false) {
-		intf->printf("Search\n");
+		uint8_t *func_start, *func_end;
+		LOG("Search\n");
 
 		// push {r4-r7, lr}
-		uint8_t *func_start = find_function(intf, start, end, "ap_cfg_send_err_code", 0xB5F0);
+		func_start = find_function(intf, start, end, "ap_cfg_send_err_code", 0xB5F0);
 		// pop {r4-r7, pc}
-		uint8_t *func_end = find_short(func_start - 1, end, 0xBDF0) + 2;
+		func_end = find_short(func_start, end, 0xBDF0) + 2;
+		// store function bounds
+		intf->ap_cfg_send_err_code	   = (ap_cfg_send_err_code_t)func_start;
+		intf->ap_cfg_send_err_code_end = func_end;
 
 		// push {r4, r5, lr}
-		intf->sys_stop_timer	   = (sys_stop_timer_t)find_function(intf, start, end, "sys_stop_timer", 0xB530);
-		intf->ap_cfg_send_err_code = (ap_cfg_send_err_code_t)func_start;
+		func_start = find_function(intf, start, end, "sys_stop_timer", 0xB530);
+		// pop {r4, r5, pc}
+		func_end = find_short(func_start, end, 0xBD30) + 2;
+		// store function bounds
+		intf->sys_stop_timer	 = (sys_stop_timer_t)func_start;
+		intf->sys_stop_timer_end = func_end;
 
-		find_app_intf(intf, func_start - 1, func_end);
+		find_app_intf(intf);
 
 		if (!intf->search_performed)
 			return 1;
@@ -31,7 +39,7 @@ int main(uint8_t *data, FW_INTERFACE *intf, uint32_t command) {
 	uint32_t request_id = data32[0];
 	uint32_t address	= data32[1];
 
-	intf->printf("cmd=%02x\n", command);
+	LOG("cmd=%02x\n", command);
 
 	switch (command) {
 		case 0x01:

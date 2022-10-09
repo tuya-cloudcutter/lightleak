@@ -6,7 +6,7 @@ void cmd_send_response(FW_INTERFACE *intf, uint32_t request_id, uint32_t address
 	int fd = intf->socket(1);
 	if (fd < 0)
 		return;
-	intf->printf("Got fd %01x, send to %08x\n", fd, address);
+	LOG("Got fd %01x, send to %08x\n", fd, address);
 
 	uint32_t crc = intf->crc32(0, data, len);
 	data -= 8;
@@ -16,7 +16,7 @@ void cmd_send_response(FW_INTERFACE *intf, uint32_t request_id, uint32_t address
 	data32[1]		 = crc;
 
 	int ret = intf->sendto(fd, data, len, address, 6667);
-	intf->printf("ret=%01x, len=%01x\n", ret, len);
+	LOG("ret=%01x, len=%01x\n", ret, len);
 
 	intf->close(fd);
 }
@@ -36,7 +36,7 @@ void cmd_flash_read(FW_INTERFACE *intf, uint32_t request_id, uint32_t address, u
 	uint32_t length = data32[4];
 	uint32_t maxlen = data32[5];
 
-	intf->printf("Read %x from %06x\n", length, offset);
+	LOG("Read %x from %06x\n", length, offset);
 
 	while (length && maxlen) {
 		uint32_t to_read = MIN(length, maxlen);

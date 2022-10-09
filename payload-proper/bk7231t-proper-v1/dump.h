@@ -8,6 +8,11 @@
 
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
+#define LOG(fmt, ...)	intf->printf(fmt, __VA_ARGS__)
+#define DEBUG(fmt, ...) intf->printf(fmt, __VA_ARGS__)
+
+#define THUMB_ADDR(x) ((uint8_t *)((uint32_t)x & 0xFFFFFFFE))
+
 typedef int (*flash_read_t)(uint8_t *buf, uint32_t offset, uint32_t size);
 typedef int (*flash_write_t)(uint8_t *buf, uint32_t offset, uint32_t size);
 typedef int (*flash_erase_t)(uint32_t offset);
@@ -33,12 +38,15 @@ typedef struct {
 	void *reserved[16];
 	// app
 	ap_cfg_send_err_code_t ap_cfg_send_err_code;
+	void *ap_cfg_send_err_code_end;
 	tuya_hal_net_socket_create_t socket;
 	tuya_hal_net_set_reuse_t reuse;
 	tuya_hal_net_set_boardcast_t broadcast;
 	tuya_hal_net_send_to_t sendto;
 	tuya_hal_net_close_t close;
 	sys_stop_timer_t sys_stop_timer;
+	void *sys_stop_timer_end;
+	uint32_t *sys_timer_handle;
 } FW_INTERFACE;
 
 typedef struct {
@@ -72,9 +80,11 @@ uint8_t *find_data(uint8_t *start, uint8_t *end, uint8_t *data, uint8_t len);
 uint8_t *find_word(uint8_t *start, uint8_t *end, uint32_t number);
 uint8_t *find_short(uint8_t *start, uint8_t *end, uint16_t number);
 uint8_t *find_short_rev(uint8_t *start, uint8_t *end, uint16_t number);
-uint8_t *parse_branch(uint16_t *data);
 uint8_t *find_function(FW_INTERFACE *intf, uint8_t *start, uint8_t *end, char *string, uint16_t push_opcode);
-void find_app_intf(FW_INTERFACE *intf, uint8_t *start, uint8_t *end);
+void find_app_intf(FW_INTERFACE *intf);
+// dump_arm.c
+uint8_t *parse_branch(uint16_t *data);
+uint32_t *parse_ldr_pc(uint16_t *data, uint8_t *reg);
 // dump_util.c
 uint8_t strlen(char *str);
 // dump_cmd.c

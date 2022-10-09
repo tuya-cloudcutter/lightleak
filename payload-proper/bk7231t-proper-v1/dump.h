@@ -8,8 +8,10 @@
 
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
-#define LOG(fmt, ...)	intf->printf(fmt, __VA_ARGS__)
-#define DEBUG(fmt, ...) intf->printf(fmt, __VA_ARGS__)
+#define LOG(...) intf->printf(__VA_ARGS__)
+
+// #define DEBUG(...) intf->printf(__VA_ARGS__)
+#define DEBUG(...)
 
 #define THUMB_ADDR(x) ((uint8_t *)((uint32_t)x & 0xFFFFFFFE))
 

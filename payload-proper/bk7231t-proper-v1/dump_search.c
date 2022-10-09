@@ -110,5 +110,22 @@ void find_app_intf(FW_INTERFACE *intf) {
 
 	LOG("Found: create=%x, sendto=%x, close=%x\n", intf->socket, intf->sendto, intf->close);
 
+	start = (uint16_t *)THUMB_ADDR(intf->sys_stop_timer);
+	end	  = (uint16_t *)intf->sys_stop_timer_end;
+	for (uint16_t *data = start; data < end; data++) {
+		if (data[1] == 0x1C29 && data[2] == 0x6818) {
+			// movs r1, r5
+			// ldr r0, [r3]
+			uint32_t ***addr = (uint32_t ***)parse_ldr_pc(data, NULL);
+			LOG("Found %s %01x: %06x\n", "imm", 1, addr);
+			if (addr == NULL)
+				continue;
+			LOG("Found %s %01x: %06x\n", "hnd", 2, *addr);
+			intf->sys_timer_handle = **addr;
+		}
+	}
+
+	LOG("Found: tmr_hndl: %x\n", intf->sys_timer_handle);
+
 	intf->search_performed = intf->socket && intf->sendto && intf->close && intf->sys_timer_handle;
 }

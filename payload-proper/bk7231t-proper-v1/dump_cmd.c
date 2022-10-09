@@ -56,16 +56,45 @@ void cmd_stop_timer(FW_INTERFACE *intf, uint32_t request_id, uint32_t address, u
 	// data32[0] - request ID
 	// data32[1] - return IP address
 	// data32[2] - buffer address
-	// data32[3] - timer ID count
-	// data32[*] - timer ID
+	// data32[3] - timer count + mode
+	// data32[*] - timer ID/period
 
 	uint32_t *buf32 = (uint32_t *)data32[2];
 
-	for (uint8_t i = 0; i < data32[3]; i++) {
+	uint32_t timer_id;
+	bool period_mode	= data32[3] >> 8;
+	uint8_t timer_count = data32[3] & 0xFF;
+
+	uint16_t loops = 0;
+
+	for (uint8_t i = 0; i < timer_count; i++) {
 		uint32_t timer_id = data32[4 + i];
-		buf32[i]		  = intf->sys_stop_timer(timer_id);
-		intf->printf("Stop tmr %02x ret=%x\n", timer_id, buf32[i]);
+		uint32_t period	  = timer_id;
+
+		if (period_mode) {
+			uint32_t *handle = intf->sys_timer_handle;
+			while (handle[4] != period) {
+				DEBUG("i=%01x, hndl=%x, intf hndl=%x\n", i, handle, intf->sys_timer_handle);
+				handle = (uint32_t *)(handle[0]);
+				if (handle == intf->sys_timer_handle) {
+					DEBUG("END\n");
+					// break after checking all timers
+					break;
+				}
+				if (++loops > 100)
+					return;
+			}
+			if (handle[4] != period) {
+				buf32[i] = -1;
+				continue;
+			}
+			DEBUG("FOUND period=%x\n", period);
+			timer_id = handle[7] & 0xFFFF;
+		}
+
+		buf32[i] = intf->sys_stop_timer(timer_id);
+		LOG("Stop tmr %02x ret=%x\n", timer_id, buf32[i]);
 	}
 
-	cmd_send_response(intf, request_id, address, (uint8_t *)buf32, data32[3] * 4);
+	cmd_send_response(intf, request_id, address, (uint8_t *)buf32, timer_count * 4);
 }

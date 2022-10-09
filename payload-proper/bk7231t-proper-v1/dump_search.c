@@ -65,26 +65,28 @@ uint8_t *parse_branch(uint16_t *data) {
 uint8_t *find_function(FW_INTERFACE *intf, uint8_t *start, uint8_t *end, char *string, uint16_t push_opcode) {
 	uint8_t len = strlen(string) + 1;
 
+	intf->printf("Search %s\n", string);
+
 	uint8_t *str_addr = find_data(start, end, (uint8_t *)string, len);
 	if (str_addr == NULL) {
 		intf->printf("Not found\n");
 		return NULL;
 	}
-	intf->printf("Found %01x: %06x\n", 1, str_addr);
+	intf->printf("Found %s %01x: %06x\n", string, 1, str_addr);
 
 	uint8_t *str_offset_addr = find_word(start, end, (uint32_t)str_addr);
 	if (str_offset_addr == NULL) {
 		intf->printf("Not found\n");
 		return NULL;
 	}
-	intf->printf("Found %01x: %06x\n", 2, str_offset_addr);
+	intf->printf("Found %s %01x: %06x\n", string, 2, str_offset_addr);
 
 	uint8_t *func_addr = find_short_rev(start, str_offset_addr, push_opcode);
 	if (func_addr == NULL) {
 		intf->printf("Not found\n");
 		return NULL;
 	}
-	intf->printf("Found %01x: %06x\n", 3, func_addr);
+	intf->printf("Found %s %01x: %06x\n", string, 3, func_addr);
 	return func_addr + 1;
 }
 

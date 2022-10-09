@@ -20,6 +20,7 @@ typedef int (*tuya_hal_net_set_reuse_t)(int fd);
 typedef int (*tuya_hal_net_set_boardcast_t)(int fd);
 typedef int (*tuya_hal_net_send_to_t)(int fd, void *buf, uint32_t nbytes, uint32_t addr, uint16_t port);
 typedef int (*tuya_hal_net_close_t)(int fd);
+typedef int (*sys_stop_timer_t)(int timer_id);
 
 typedef struct {
 	uint32_t search_performed;
@@ -32,12 +33,12 @@ typedef struct {
 	void *reserved[16];
 	// app
 	ap_cfg_send_err_code_t ap_cfg_send_err_code;
-	void *ap_cfg_send_err_code_end;
 	tuya_hal_net_socket_create_t socket;
 	tuya_hal_net_set_reuse_t reuse;
 	tuya_hal_net_set_boardcast_t broadcast;
 	tuya_hal_net_send_to_t sendto;
 	tuya_hal_net_close_t close;
+	sys_stop_timer_t sys_stop_timer;
 } FW_INTERFACE;
 
 typedef struct {
@@ -78,4 +79,5 @@ void find_app_intf(FW_INTERFACE *intf, uint8_t *start, uint8_t *end);
 uint8_t strlen(char *str);
 // dump_cmd.c
 void cmd_send_response(FW_INTERFACE *intf, uint32_t request_id, uint32_t address, uint8_t *data, uint16_t len);
-void cmd_flash_read(FW_INTERFACE *intf, uint8_t *data);
+void cmd_flash_read(FW_INTERFACE *intf, uint32_t request_id, uint32_t address, uint32_t *data32);
+void cmd_stop_timer(FW_INTERFACE *intf, uint32_t request_id, uint32_t address, uint32_t *data32);

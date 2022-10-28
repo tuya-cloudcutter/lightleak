@@ -41,6 +41,8 @@ if len(code) > 56:
 
 print(f"Code length: {len(code)} bytes")
 
+print(code.hex(" ", -1))
+
 while len(code) < 56:
     code += b"\xaa"
 
@@ -61,6 +63,23 @@ if addr == 0x1C5AC0:
             # reveng -m crc-16/cms -i 0 -v 000000ffffffffff
             # (passwd. last 2 bytes + null term. + rest of block + expected CRC)
             revcrc=0x7ADF,
+        ),
+    ]
+elif addr == 0x1B5AC0:
+    # BK7231N
+    blocks += [
+        dict(
+            addr=addr + 0x00,
+            code=code[0:32],  # 32 bytes
+            pre_block=b"11",
+        ),
+        dict(
+            addr=addr + 0x20,
+            code=code[32:56],  # 24 bytes
+            post_code=b"\x00\x00\x00\x00\x31\x30",  # beginning of IP (10.0.0.x)
+            # reveng -m crc-16/cms -i 0 -v 0000000031302e30
+            # (passwd. last 2 bytes + null term. + rest of block + expected CRC)
+            revcrc=0x33B3,
         ),
     ]
 else:

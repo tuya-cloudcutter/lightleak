@@ -2,22 +2,26 @@
 .syntax unified
 .globl _start
 
+// detect 0xFF at lan->buf[0xFC]
+// r4/r5 == lan->buf + 0xF8 == lan + 0xFC
 _start:
 	push {r0, r4-r7, lr}
-	// detect 0xFF at lan->buf[0xFC]
+
+	// r6 = lan->buf[0xFC]
 	adds r7, r4, #0x04
 	ldr r6, [r7]
 	cmp r6, #0xFF
 	beq prepare
 	adds r7, r5, #0x04
-	// r7 = lan->buf + 0xFC
 
+// r7 == lan->buf + 0xFC
 prepare:
+	// r7 = lan->buf + 0xF0
+	subs r7, 0x0C
 	// r4 = lan->buf[0xF0] - lan->fd
 	// r5 = lan->buf[0xF4] - bootloader magic address
 	// r6 = lan->buf[0xF8] - target storage address
-	// r7 = lan->buf + 0xFC = lan + 0x100
-	subs r7, 0x0C
+	// r7 = lan->buf + 0xFC == lan + 0x100
 	ldm r7!, {r4, r5, r6}
 
 	// store at lan->fd (lan + 0x144)
@@ -28,6 +32,7 @@ prepare:
 	// set command buffer pointer (lan->buf + 0x48)
 	subs r7, #0xB4
 
+// r4 == lan->buf + 0x48
 parse:
 	// load next word from buffer
 	// r0 = magic		/ command word

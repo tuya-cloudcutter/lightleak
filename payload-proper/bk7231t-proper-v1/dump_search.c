@@ -127,5 +127,8 @@ void find_app_intf(FW_INTERFACE *intf) {
 
 	LOG("Found: tmr_hndl: %x\n", intf->sys_timer_handle);
 
-	intf->search_performed = intf->socket && intf->sendto && intf->close && intf->sys_timer_handle;
+	if (intf->socket && intf->sendto && intf->close && intf->sys_timer_handle)
+		intf->search_performed = 0xDEADBEEF;
+	else
+		intf->search_performed = 0;
 }

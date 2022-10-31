@@ -9,7 +9,7 @@ int main(uint8_t *data, FW_INTERFACE *intf, uint32_t command) {
 	uint8_t *start = (uint8_t *)(0x10000);
 	uint8_t *end   = (uint8_t *)(start + 0x107800);
 
-	if (intf->search_performed == false) {
+	if (intf->search_performed != 0xDEADBEEF) {
 		uint8_t *func_start, *func_end;
 		LOG("Search\n");
 
@@ -31,7 +31,7 @@ int main(uint8_t *data, FW_INTERFACE *intf, uint32_t command) {
 
 		find_app_intf(intf);
 
-		if (!intf->search_performed)
+		if (intf->search_performed != 0xDEADBEEF)
 			return 1;
 	}
 

@@ -49,6 +49,10 @@ int main(uint8_t *data, FW_INTERFACE *intf, uint32_t command) {
 		case 0x0E:
 			cmd_stop_timer(intf, request_id, address, data32);
 			break;
+
+		case 0x10:
+			cmd_fill_intf(intf, request_id, address, data32);
+			break;
 	}
 
 	return 0;

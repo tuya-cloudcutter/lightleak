@@ -38,18 +38,32 @@ void cmd_flash_read(FW_INTERFACE *intf, uint32_t request_id, uint32_t address, u
 
 	LOG("Read %x from %06x\n", length, offset);
 
+#ifdef BK7231N
+	uint32_t temp;
+	DD_HANDLE ddev = intf->ddev_open("flash", &temp, 0);
+#endif
+
 	while (length && maxlen) {
 		uint32_t to_read = MIN(length, maxlen);
 
 		buf32[0] = offset;
 		buf32[1] = to_read;
 
+#ifdef BK7231T
 		intf->flash_read(buf + 8, offset, to_read);
+#endif
+#ifdef BK7231N
+		intf->ddev_read(ddev, buf + 8, to_read, offset);
+#endif
 		cmd_send_response(intf, request_id, address, buf, to_read + 8);
 
 		offset += to_read;
 		length -= to_read;
 	}
+
+#ifdef BK7231N
+	intf->ddev_close(ddev);
+#endif
 }
 
 void cmd_stop_timer(FW_INTERFACE *intf, uint32_t request_id, uint32_t address, uint32_t *data32) {
@@ -97,4 +111,19 @@ void cmd_stop_timer(FW_INTERFACE *intf, uint32_t request_id, uint32_t address, u
 	}
 
 	cmd_send_response(intf, request_id, address, (uint8_t *)buf32, timer_count * 4);
+}
+
+void cmd_fill_intf(FW_INTERFACE *intf, uint32_t request_id, uint32_t address, uint32_t *data32) {
+	// data32[0] - request ID
+	// data32[1] - return IP address
+	// data32[2] - buffer address
+	// data32[3] - intf length (words)
+	// data32[*] - intf data
+
+	uint32_t *intf32 = (uint32_t *)intf;
+
+	for (uint8_t i = 0; i < data32[3]; i++) {
+		// do not overwrite intf->search_performed
+		intf32[1 + i] = data32[4 + 1];
+	}
 }

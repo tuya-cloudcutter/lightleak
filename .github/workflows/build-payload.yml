@@ -50,7 +50,8 @@ jobs:
 
       - name: Build proper payloads
         run: |
-          ./build-proper.sh
+          ./build-proper.sh bk7231-proper-v1 bk7231t-proper-v1 BK7231T
+          ./build-proper.sh bk7231-proper-v1 bk7231n-proper-v1 BK7231N
 
       - name: Deploy binaries to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4

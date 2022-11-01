@@ -8,11 +8,12 @@ from ltchiptool.util import CRC16
 from ltchiptool.util.intbin import inttobe16
 
 if len(sys.argv) != 4:
-    print(f"usage: {sys.argv[0]} <address> <input> <output>")
+    print(f"usage: {sys.argv[0]} <mode> <input> <output>")
     exit(2)
 
-addr = int(sys.argv[1], 16)
+mode = sys.argv[1]
 bk = BekenBinary("510fb093a3cbeadc5993a17ec7adeb03")
+xor_key = b"\x55\xaa\x5a\x55\xa5\x4d\x63\x7f"
 
 
 def find_null(data, source):
@@ -32,6 +33,12 @@ def cmd(*args: str) -> str:
     return p.stdout.read().decode().strip()
 
 
+def xor_encode(var, offs):
+    key_offs = ((offs - 1) % 8) + 1
+    key = xor_key[key_offs:] + xor_key[:key_offs]
+    return bytes(a ^ key[i % 8] for i, a in enumerate(var))
+
+
 with open(sys.argv[2], "rb") as f:
     code = f.read()
 
@@ -48,8 +55,8 @@ while len(code) < 56:
 
 blocks: list[dict] = []
 
-if addr == 0x1C5AC0:
-    # BK7231T
+if mode == "bk7231t-standard":
+    addr = 0x1C5AC0
     blocks += [
         dict(
             addr=addr + 0x00,
@@ -65,8 +72,9 @@ if addr == 0x1C5AC0:
             revcrc=0x7ADF,
         ),
     ]
-elif addr == 0x1B5AC0:
+elif mode == "bk7231n-ip":
     # BK7231N
+    addr = 0x1B5AC0
     blocks += [
         dict(
             addr=addr + 0x00,
@@ -82,13 +90,37 @@ elif addr == 0x1B5AC0:
             revcrc=0x33B3,
         ),
     ]
+elif mode == "bk7231n-xor":
+    # BK7231N
+    addr = 0x1B5AC0
+    blocks += [
+        dict(
+            addr=addr + 0x00,
+            code=code[0:32],  # 32 bytes
+            pre_block=b"11",
+            xor=True,
+            xor_offs=0x6C,
+        ),
+        dict(
+            addr=addr + 0x20,
+            code=code[32:56],  # 24 bytes
+            post_code=b"\x55\xaa\x5a\xff\xff\xff",
+            # reveng -m crc-16/cms -i 0 -v 55aa5affffffffff
+            # (passwd. last 2 bytes + null term. + rest of block + expected CRC) - XOR-encoded
+            revcrc=0x67EC,
+            xor=True,
+            xor_offs=0x8E,
+        ),
+    ]
 else:
-    print(f"Unknown address: 0x{addr:X}")
+    print(f"Unknown mode: {mode}")
     exit(1)
 
 data = b""
 
 for i, block in enumerate(blocks):
+    xor = block.get("xor", False)
+
     # encrypt code and find null bytes
     block["crypt"] = b"".join(bk.crypt(block["addr"], block["code"]))
     find_null(block["crypt"], block["code"])
@@ -106,11 +138,13 @@ for i, block in enumerate(blocks):
         block["crypt"] += fix
         find_null(fix, fix)
 
+    # store entire block
+    block_strip = block["crypt"]
+    if xor:
+        block_strip = xor_encode(block_strip, block["xor_offs"])
+    data += block_strip
     # add post-code padding
     block["crypt"] = block["crypt"] + block.get("post_code", b"")
-    # store entire block
-    block_strip = block["crypt"].partition(b"\x00")[0]
-    data += block_strip
     # add post-block padding
     data += block.get("post_block", b"")
 
@@ -120,6 +154,9 @@ for i, block in enumerate(blocks):
     find_null(block["crc"], block["crc"])
     # store block CRC for full blocks
     if len(block_strip) == 32:
+        if xor:
+            block["crc"] = xor_encode(block["crc"], block["xor_offs"] + 0x20)
+            print(f"Block {i} CRC (XOR): {block['crc'].hex()}")
         data += block["crc"]
 
 print(f"Output ({len(data)} bytes):")

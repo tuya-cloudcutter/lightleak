@@ -124,6 +124,6 @@ void cmd_fill_intf(FW_INTERFACE *intf, uint32_t request_id, uint32_t address, ui
 
 	for (uint8_t i = 0; i < data32[3]; i++) {
 		// do not overwrite intf->search_performed
-		intf32[1 + i] = data32[4 + 1];
+		intf32[1 + i] = data32[4 + i];
 	}
 }

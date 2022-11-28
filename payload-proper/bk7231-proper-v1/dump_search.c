@@ -47,7 +47,14 @@ uint8_t *find_short_rev(uint8_t *start, uint8_t *end, uint16_t number) {
 }
 
 uint8_t *find_function(FW_INTERFACE *intf, uint8_t *start, uint8_t *end, char *string, uint16_t push_opcode) {
+#ifdef BK7231T
 	uint8_t len = strlen(string) + 1;
+#endif
+#ifdef BK7231N
+	// don't expect '\0' at the end of string
+	// (we're searching parts of strings)
+	uint8_t len = strlen(string);
+#endif
 
 	LOG("Search %s\n", string);
 
@@ -77,6 +84,12 @@ uint8_t *find_function(FW_INTERFACE *intf, uint8_t *start, uint8_t *end, char *s
 void find_app_intf(FW_INTERFACE *intf) {
 	uint8_t **store = NULL;
 	uint16_t *start, *end;
+
+	// reset intf so that we don't get false success
+	intf->socket		   = 0;
+	intf->sendto		   = 0;
+	intf->close			   = 0;
+	intf->sys_timer_handle = 0;
 
 	start = (uint16_t *)THUMB_ADDR(intf->ap_cfg_send_err_code);
 	end	  = (uint16_t *)intf->ap_cfg_send_err_code_end;

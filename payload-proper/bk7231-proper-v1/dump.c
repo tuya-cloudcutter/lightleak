@@ -13,18 +13,36 @@ int main(uint8_t *data, FW_INTERFACE *intf, uint32_t command) {
 		uint8_t *func_start, *func_end;
 		LOG("Search\n");
 
+		// find ap_cfg_send_err_code()
+#ifdef BK7231T
 		// push {r4-r7, lr}
 		func_start = find_function(intf, start, end, "ap_cfg_send_err_code", 0xB5F0);
 		// pop {r4-r7, pc}
 		func_end = find_short(func_start, end, 0xBDF0) + 2;
+#endif
+#ifdef BK7231N
+		// push {r0-r2, r4-r7, lr}
+		func_start = find_function(intf, start, end, "sendto Fail,len:", 0xB5F7);
+		// pop {r0-r2, r4-r7, pc}
+		func_end = find_short(func_start, end, 0xBDF7) + 2;
+#endif
 		// store function bounds
 		intf->ap_cfg_send_err_code	   = (ap_cfg_send_err_code_t)func_start;
 		intf->ap_cfg_send_err_code_end = func_end;
 
+		// find sys_stop_timer()
+#ifdef BK7231T
 		// push {r4, r5, lr}
 		func_start = find_function(intf, start, end, "sys_stop_timer", 0xB530);
 		// pop {r4, r5, pc}
 		func_end = find_short(func_start, end, 0xBD30) + 2;
+#endif
+#ifdef BK7231N
+		// push {r3-r5, lr}
+		func_start = find_function(intf, start, end, "Stop tm err:", 0xB538);
+		// pop {r3-r5, pc}
+		func_end = find_short(func_start, end, 0xBD38) + 2;
+#endif
 		// store function bounds
 		intf->sys_stop_timer	 = (sys_stop_timer_t)func_start;
 		intf->sys_stop_timer_end = func_end;

@@ -5,7 +5,7 @@
 // detect 0xFF at lan->buf[0xFC]
 // r4/r5 == lan->buf + 0xF8 == lan + 0xFC
 _start:
-	push {r4-r7, lr}
+	push {r0, r4-r7, lr}
 
 	// r7 = lan->buf[0xFC]
 	ldr r7, [r4, #0x04]
@@ -46,12 +46,12 @@ call_proper:
 	b call_ddev
 
 ddev_open:
-	// ddev_open(handle, *dev_name, *status, op_flag);
+	// *handle = ddev_open(*dev_name, *status, op_flag);
 	// *buf[0xF8] = ddev_open(buf + 0x50, buf[0x48], buf[0x4C]);
 	ldmia r4!, {r1, r2}
 	movs r0, r4
 	blx r8
-	str r0, [r6]
+	str r0, [r7]
 	b finish
 
 ddev_write:
@@ -75,4 +75,4 @@ call_ddev:
 	blx r8
 
 finish:
-	pop {r4-r7, pc}
+	pop {r0, r4-r7, pc}

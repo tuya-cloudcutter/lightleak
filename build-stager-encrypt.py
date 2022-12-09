@@ -55,8 +55,9 @@ while len(code) < 56:
 
 blocks: list[dict] = []
 
-if mode == "bk7231t-standard":
-    addr = 0x1C5AC0
+if mode.endswith("-standard"):
+    # Standard (no XOR)
+    addr = 0x1C5AC0 if mode.startswith("bk7231t") else 0x1B5AC0
     blocks += [
         dict(
             addr=addr + 0x00,

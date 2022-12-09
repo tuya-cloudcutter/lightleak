@@ -46,8 +46,9 @@ jobs:
       - name: Build stager payloads
         run: |
           ./build-stager.sh bk7231t 0x1C5AC0 standard
-          ./build-stager.sh bk7231n 0x1B5AC0 ip
+          ./build-stager.sh bk7231n 0x1B5AC0 standard
           ./build-stager.sh bk7231n 0x1B5AC0 xor
+          ./build-stager.sh bk7231n 0x1B5AC0 ip
 
       - name: Build proper payloads
         run: |

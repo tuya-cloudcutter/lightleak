@@ -11,9 +11,7 @@ void setup() {
 
 	WiFi.softAPConfig(IPAddress(10, 0, 0, 1), IPAddress(10, 0, 0, 1), IPAddress(255, 255, 255, 0));
 
-#if defined(ESP32)
-	WiFi.onEvent(onStationConnected, SYSTEM_EVENT_AP_STACONNECTED);
-#elif defined(ESP8266)
+#if defined(ESP8266)
 	WiFi.onEvent(onStationConnected, WIFI_EVENT_SOFTAPMODE_STACONNECTED);
 #else
 	WiFi.onEvent(onStationConnected, ARDUINO_EVENT_WIFI_AP_STACONNECTED);

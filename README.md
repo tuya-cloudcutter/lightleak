@@ -8,7 +8,7 @@ A detailed writeup about how this works will probably be here at some point.
 
 Lightleak is used together with the [Cloudcutter Android](https://github.com/tuya-cloudcutter/cloudcutter-android) application. Currently, there's no other way to use it.
 
-Additionally, you need a device (ESP32/ESP8266/BK7231 with Tasamota/ESPHome OR RTL8710B with LibreTuya) to serve as a dummy Wi-Fi Access Point - hereinafter referred to as `CustomAP device`. This will be configured and used by the Android app throughout the process. The [`platformio-custom-ap`](https://github.com/tuya-cloudcutter/lightleak/tree/master/platformio-custom-ap) directory contains a PlatformIO project that can be compiled on any of the platforms mentioned above. You need to download this code, build it, and upload to your device of choice - please note that the device you choose WILL NOT be OTA flashable after this. It's advised to get a cheap ESP32 chipset with USB before proceeding.  
+Additionally, you need a device (ESP32/ESP8266 with USB or OTA update capable firmware OR BK7231/RTL8710B with LibreTuya) to serve as a dummy Wi-Fi Access Point - hereinafter referred to as `CustomAP device`. This will be configured and used by the Android app throughout the process. The [`platformio-custom-ap`](https://github.com/tuya-cloudcutter/lightleak/tree/master/platformio-custom-ap) directory contains a PlatformIO project that can be compiled on any of the platforms mentioned above. You need to download this code, build it, and upload to your device of choice - please note that the device you choose WILL NOT be OTA flashable after this. It's advised to get a cheap ESP32 chipset with USB before proceeding.
 
 ### Compiling & Installing CustomAP firmware
 
@@ -23,7 +23,7 @@ web_server:
   port: 80
 ```
 
-This will then allow you to manually upload the CustomAP firmware. 
+This will then allow you to manually upload the CustomAP firmware. Just be aware that you will **not** be able to OTA flash the device back after this. 
 
 Once installed, check that the LightleakIdle AP is visible before proceeding but do not connect to it. 
 
@@ -59,8 +59,3 @@ Plug in the CustomAP device and make sure it works (a `LightleakIdle` Wi-Fi netw
 	- Either [post the file to tuya-cloudcutter issues](https://github.com/tuya-cloudcutter/tuya-cloudcutter/issues), or:
 	- if you're feeling brave enough, [create the profile yourself](https://github.com/tuya-cloudcutter/tuya-cloudcutter/tree/main/profile-building).
 	- After that's done, you can use tuya-cloudcutter to detach the device from cloud, or [flash custom firmware](https://github.com/tuya-cloudcutter/tuya-cloudcutter/blob/main/INSTRUCTIONS.md#flashing-custom-firmware).
-
-
-## Restoring CustomAP device
-
-TODO

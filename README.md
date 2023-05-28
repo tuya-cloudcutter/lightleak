@@ -43,7 +43,7 @@ Plug in the CustomAP device and make sure it works (a `LightleakIdle` Wi-Fi netw
 - [Install the app](https://github.com/tuya-cloudcutter/cloudcutter-android/blob/master/README.md).
 - Go to `App Info` (Android settings), choose `Permissions` and grant the `Location` permission (it's required for Wi-Fi connecting and scanning). **The app won't ask for it yet, so you have to grant it manually.**
 - Before running the process, ensure you have both Wi-Fi and Location enabled (otherwise it'll just fail silently, waiting forever and timing out).
-- It may be helpful to "Forget" any 
+- It may be helpful to "Forget" any local wifi networks. Your phone may try to join those while running the app, causing unexepected failures. You can add them back afterwards. 
 - Open the app. Select one of the Lightleak profiles (depending on the CPU of your device). If you don't know the CPU you have, you can try all the profiles, one by one. Trying an incompatible profile will not brick the device; it will just freeze and reboot after ~60 seconds.
 - Read the message about choosing device state.
 	- If it's the first time exploiting a particular device, choose `Unconfigured`. Other options are too hard to explain here, so just don't use them please.

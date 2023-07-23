@@ -50,9 +50,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install --upgrade platformio
 
-      - name: Install LibreTuya platform
+      - name: Install LibreTiny platform
         run: |
-          pio platform install -f https://github.com/kuba2k2/libretuya
+          pio platform install -f https://github.com/kuba2k2/libretiny
 
       - name: Get current build date
         id: build

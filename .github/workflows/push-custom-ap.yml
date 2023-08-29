@@ -1,0 +1,45 @@
+name: Push (CustomAP)
+on:
+  push:
+    branches: ["master"]
+    paths:
+      - .github/workflows/push-custom-ap.yml
+      - platformio-custom-ap/**
+  workflow_dispatch:
+jobs:
+  lint-clang:
+    name: Run Clang lint
+    uses: kuba2k2/kuba2k2/.github/workflows/lint-clang.yml@master
+  version:
+    name: Get version numbers
+    uses: kuba2k2/kuba2k2/.github/workflows/version.yml@master
+  build-pio:
+    name: Build PlatformIO project
+    needs:
+      - lint-clang
+      - version
+    uses: kuba2k2/kuba2k2/.github/workflows/build-pio.yml@master
+    with:
+      project-directory: ./platformio-custom-ap/
+      pre-build: |
+        pio platform install -f https://github.com/kuba2k2/libretiny
+      post-build: |
+        mkdir -p dist/
+        cp .pio/build/esp32/firmware.bin dist/lightleak-custom-ap_v${{ needs.version.outputs.now-long }}_esp32.bin
+        cp .pio/build/esp8266/firmware.bin dist/lightleak-custom-ap_v${{ needs.version.outputs.now-long }}_esp8266.bin
+        cp .pio/build/bk7231t/firmware.uf2 dist/lightleak-custom-ap_v${{ needs.version.outputs.now-long }}_bk7231t.uf2
+        cp .pio/build/bk7231n/firmware.uf2 dist/lightleak-custom-ap_v${{ needs.version.outputs.now-long }}_bk7231n.uf2
+        cp .pio/build/rtl8710bn/firmware.uf2 dist/lightleak-custom-ap_v${{ needs.version.outputs.now-long }}_rtl8710bn.uf2
+      files: |
+        platformio-custom-ap/dist/*.*
+  gh-release:
+    name: Publish GitHub release
+    needs:
+      - version
+      - build-pio
+    uses: kuba2k2/kuba2k2/.github/workflows/gh-release.yml@master
+    permissions:
+      contents: write
+    with:
+      artifact: ${{ needs.build-pio.outputs.artifact }}
+      name: v${{ needs.version.outputs.now-long }}

@@ -2,7 +2,7 @@
 
 This is a somewhat universal way of exploiting [a vulnerability in Tuya Smart IoT products](https://rb9.nl/posts/2022-03-29-light-jailbreaking-exploiting-tuya-iot-devices/). Ideally, it doesn't require to have firmware dumps (and "device profiles") prior to executing.
 
-A detailed writeup about how this works will probably be here at some point.
+A detailed writeup about how this works is available: [read it here](https://kuba.szczodrzynski.pl/posts/writeups/cloudcutter-lightleak/).
 
 ## How to use it
 

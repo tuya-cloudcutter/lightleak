@@ -11,6 +11,10 @@ void setup() {
 
 	WiFi.softAPConfig(IPAddress(10, 0, 0, 1), IPAddress(10, 0, 0, 1), IPAddress(255, 255, 255, 0));
 
+	delay(2000);
+
+	Serial.println("Welcome!");
+
 #if defined(ESP8266)
 	WiFi.onEvent(onStationConnected, WIFI_EVENT_SOFTAPMODE_STACONNECTED);
 #else
@@ -153,6 +157,7 @@ void parseClientPacket(WiFiClient *client) {
 	Serial.println("CRC OK");
 	client->write(CLIENT_RESPONSE_OK);
 	client->flush();
+	delay(1000);
 	client->stop();
 
 	data.packet.ssid[32] = '\0';

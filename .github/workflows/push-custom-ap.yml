@@ -1,5 +1,9 @@
 name: Push (CustomAP)
 on:
+  pull_request:
+    paths:
+      - .github/workflows/push-custom-ap.yml
+      - platformio-custom-ap/**
   push:
     branches: ["master"]
     paths:
@@ -25,8 +29,10 @@ jobs:
         pio platform install -f https://github.com/kuba2k2/libretiny
       post-build: |
         mkdir -p dist/
+        cp .pio/build/esp32-c3/firmware.bin dist/lightleak-custom-ap_v${{ needs.version.outputs.now-long }}_esp32-c3.bin
         cp .pio/build/esp32/firmware.bin dist/lightleak-custom-ap_v${{ needs.version.outputs.now-long }}_esp32.bin
         cp .pio/build/esp8266/firmware.bin dist/lightleak-custom-ap_v${{ needs.version.outputs.now-long }}_esp8266.bin
+        cp .pio/build/sonoff_basic/firmware.bin dist/lightleak-custom-ap_v${{ needs.version.outputs.now-long }}_sonoff_basic.bin
         cp .pio/build/bk7231t/firmware.uf2 dist/lightleak-custom-ap_v${{ needs.version.outputs.now-long }}_bk7231t.uf2
         cp .pio/build/bk7231n/firmware.uf2 dist/lightleak-custom-ap_v${{ needs.version.outputs.now-long }}_bk7231n.uf2
         cp .pio/build/rtl8710bn/firmware.uf2 dist/lightleak-custom-ap_v${{ needs.version.outputs.now-long }}_rtl8710bn.uf2
@@ -34,6 +40,7 @@ jobs:
         platformio-custom-ap/dist/*.*
   gh-release:
     name: Publish GitHub release
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
     needs:
       - version
       - build-pio

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 cpu=$1
 addr=$2

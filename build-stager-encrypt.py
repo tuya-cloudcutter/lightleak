@@ -4,7 +4,7 @@ import sys
 from subprocess import PIPE, Popen
 
 from ltchiptool.soc.bk72xx.util import BekenBinary
-from ltchiptool.util import CRC16
+from ltchiptool.util.crc16 import CRC16
 from ltchiptool.util.intbin import inttobe16
 
 if len(sys.argv) != 4:
@@ -13,6 +13,7 @@ if len(sys.argv) != 4:
 
 mode = sys.argv[1]
 bk = BekenBinary("510fb093a3cbeadc5993a17ec7adeb03")
+crc16 = CRC16(CRC16.CMS)
 xor_key = b"\x55\xaa\x5a\x55\xa5\x4d\x63\x7f"
 
 
@@ -133,7 +134,7 @@ for i, block in enumerate(blocks):
 
     # calculate "fix" to spoof CRC
     if "revcrc" in block:
-        crc = CRC16.CMS.calc(block["crypt"])
+        crc = crc16.calc(block["crypt"])
         fix = inttobe16(crc ^ block["revcrc"])
         print(f"Block {i} fix-CRC: {fix.hex()}")
         block["crypt"] += fix
@@ -150,7 +151,7 @@ for i, block in enumerate(blocks):
     data += block.get("post_block", b"")
 
     # calculate actual CRC
-    block["crc"] = inttobe16(CRC16.CMS.calc(block["crypt"]))
+    block["crc"] = inttobe16(crc16.calc(block["crypt"]))
     print(f"Block {i} CRC: {block['crc'].hex()}")
     find_null(block["crc"], block["crc"])
     # store block CRC for full blocks

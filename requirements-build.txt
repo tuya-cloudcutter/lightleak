@@ -1,0 +1,1 @@
+ltchiptool==4.15.0

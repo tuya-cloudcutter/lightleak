@@ -4,6 +4,25 @@ This is a somewhat universal way of exploiting [a vulnerability in Tuya Smart Io
 
 A detailed writeup about how this works is available: [read it here](https://kuba.szczodrzynski.pl/posts/writeups/cloudcutter-lightleak/).
 
+## Builds in this fork
+
+Both workflows run on relevant pushes to `master`, pull requests, and manual dispatches in [GitHub Actions](https://github.com/seb5594/lightleak/actions).
+
+- **Build payload binaries** provides the `lightleak-bins` artifact: four stager variants, two proper payloads, four disassemblies, and `SHA256SUMS`. The build checks the complete artifact set, stager CRCs, and proper payload decryption against the compiler output. Fork builds do not require the upstream project's Pages SSH key.
+- **Push (CustomAP)** builds ESP32-C3, ESP32, ESP8266, Sonoff Basic, BK7231T, BK7231N, and RTL8710BN. Successful `master` builds also publish the firmware to this fork's [releases](https://github.com/seb5594/lightleak/releases). Pull requests only build and upload artifacts.
+
+For local payload builds, install Python 3.10+, the GNU Arm Embedded toolchain (CI uses `7-2017-q4`), and `python -m pip install -r requirements-build.txt`. Run these commands from the repository root in Bash:
+
+```sh
+./build-stager.sh bk7231t 0x1C5AC0 standard
+./build-stager.sh bk7231n 0x1B5AC0 standard
+./build-stager.sh bk7231n 0x1B5AC0 xor
+./build-stager.sh bk7231n 0x1B5AC0 ip
+./build-proper.sh bk7231-proper-v1 bk7231t-proper-v1 BK7231T
+./build-proper.sh bk7231-proper-v1 bk7231n-proper-v1 BK7231N
+python tests/verify-payloads.py
+```
+
 ## How to use it
 
 Lightleak is used together with the [Cloudcutter Android](https://github.com/tuya-cloudcutter/cloudcutter-android) application. Currently, there's no other way to use it.
